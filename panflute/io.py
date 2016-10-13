@@ -1,6 +1,7 @@
 # ---------------------------
 # Imports
 # ---------------------------
+from __future__ import absolute_import
 
 from .elements import Element, Doc, from_json, ListContainer
 from .elements import Space, LineBreak, SoftBreak, Para
@@ -44,7 +45,10 @@ def load(input_stream=None):
     """
 
     if input_stream is None:
-        input_stream = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
+        try:
+            input_stream = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
+        except:
+            input_stream = io.open(0, encoding='utf-8')
 
     # Load JSON and validate it
     doc = json.load(input_stream, object_pairs_hook=from_json)
@@ -94,7 +98,11 @@ def dump(doc, output_stream=None):
 
     assert type(doc) == Doc
     if output_stream is None:
-        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+        try:
+            sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+        except:
+            from kitchen.text.converters import getwriter
+            sys.stdout = getwriter('utf8')(sys.stdout)
         output_stream = sys.stdout
 
     json_serializer = lambda elem: elem.to_json()
